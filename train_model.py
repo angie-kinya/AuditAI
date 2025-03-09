@@ -1,7 +1,9 @@
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
-from datasets import Dataset, load_metric
+from datasets import Dataset
+import evaluate
 import numpy as np
 from sklearn.model_selection import train_test_split
+from preprocessing import train_dataset, eval_dataset
 
 model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
 
@@ -18,7 +20,7 @@ training_args = TrainingArguments(
 )
 
 # Define a metric to evaluate the model
-metric = load_metric("accuracy")
+metric = evaluate.load("accuracy")
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
@@ -29,12 +31,15 @@ trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
-    eval_dataset=eval_dataset 
-    compute_metrics=compute_metrics
+    eval_dataset=eval_dataset, 
+    compute_metrics=compute_metrics,
 )
 
-trainer.train()
+def train_compliance():
+    # Train the model
+    trainer.train()
 
-# Evaluate the model
-eval_results = trainer.evaluate()
-print("Evaluation Results:", eval_results)
+def evaluate_compliance():
+    # Evaluate the model
+    eval_results = trainer.evaluate()
+    print("Evaluation Results:", eval_results)

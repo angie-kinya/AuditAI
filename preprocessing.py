@@ -1,6 +1,6 @@
 from transformers import BertTokenizer
 from datasets import Dataset
-from sklearn.model_selection import train_test_split
+from data_extraction import compliance_texts
 
 # Combining compliance documents excerpts and the synthetic audit report sample
 texts = [
@@ -18,10 +18,14 @@ def tokenize_function(example):
     return tokenizer(example["text"], padding="max_length", truncation=True, max_length=512)
 
 # Create dataset
-dataset = Dataset.from_dict({"text": texts, "label": labels})
-tokenized_dataset = dataset.map(tokenize_function, batched=True)
+def create_dataset():
+    dataset = Dataset.from_dict({"text": texts, "label": labels})
+    return dataset.map(tokenize_function, batched=True)
+    
+# Create and tokenize dataset
+tokenize_dataset = create_dataset()
 
 # Split dataset into training and validation sets
-train_val = tokenized_dataset.train_test_split(test_size=0.2, seed=42)
+train_val = tokenize_dataset.train_test_split(test_size=0.2, seed=42)
 train_dataset = train_val["train"]
 eval_dataset = train_val["test"]

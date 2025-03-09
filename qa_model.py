@@ -1,10 +1,11 @@
-from transformers import BertTokenizer, BertForQuestionAnswering, Trainer, TrainingArguments
-from datasets import Dataset, load_metric
+from transformers import BertTokenizerFast, BertForQuestionAnswering, Trainer, TrainingArguments
+from datasets import Dataset
+import evaluate
 import numpy as np
 from sklearn.model_selection import train_test_split
 
 # Initialize tokenizer and model for question-answering(QA)
-tokenizer_qa = BertTokenizer.from_pretrained("bert-base-uncased")
+tokenizer_qa = BertTokenizerFast.from_pretrained("bert-base-uncased")
 model_qa = BertForQuestionAnswering.from_pretrained("bert-base-uncased")
 
 # Define training arguments (Synthetic QA data)
@@ -48,7 +49,8 @@ def prepare_train_features(examples):
 
     for i, offsets in enumerate(offset_mapping):
         input_ids = tokenized_examples["input_ids"][i]
-        answer = examples["answers"][sample_mapping][i]
+        sample_index = sample_mapping[i]
+        answer = examples["answers"][sample_index]
         # Take the first answer if there are multiple for simplicity
         answer_text = answer["text"][0]
         answer_start = answer["answer_start"][0]
@@ -102,9 +104,12 @@ qa_trainer = Trainer(
     compute_metrics=compute_qa_metrics
 )
 
-# Train the QA model
-qa_trainer.train()
+def qamodel_trainer():
+    # Train the QA model
+    qa_trainer.train()
+    # Save the trained model
+    qa_trainer.save_model("./auditai_qa_model")
 
-# Evaluate the QA model
-qa_eval_results = qa_trainer.evaluate()
-print("Evaluation Results (QA):", qa_eval_results)
+def qa_eval_results():
+    # Evaluate the QA model
+    return qa_trainer.evaluate()
